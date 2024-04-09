@@ -1,114 +1,121 @@
 package com.digitalbank.app.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import java.time.LocalDate;
-import java.util.Arrays;
+import com.digitalbank.app.bankcard.BankCreditCard;
+import com.digitalbank.app.bankcard.BankDebitCard;
+import com.digitalbank.app.security.CreditCardSecurity;
+import com.digitalbank.app.security.FraudSecurity;
+import com.digitalbank.app.security.TravellingSecurity;
+
+import java.time.LocalDate; // Import LocalDate from java.time
 import java.util.List;
-//import java.time.LocalDate;
-import java.time.Period;
 
-import com.digitalbank.app.category.ClientCategory;
 
+ 
 @Entity
 public class Client {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String clientName;
-    private Long CPFnumber;
-    private LocalDate dateOfBirth;
-    private String address;
-    private ClientCategory category; // Add the category field
-
-
-    // Common, super, and premium category
-    public void defineCategory() {
-        if (calculateTotalSpending() > 1000) {
-            category = ClientCategory.Premium;
-        } else if (calculateSeniority(dateOfBirth) > 2) {
-            category = ClientCategory.Super;
-        } else {
-            category = ClientCategory.Common;
-        }
-    }
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;	
+	//CPF, name, date of birth, address
+	private String name;
+	private Long CPF;
+	private LocalDate dateOfBirth;
+	private String address;	
+	private String type; // Com, Super or Premium
+	// Defining the balance column with default value 0.0 and disallowing null values
+    @Column(nullable = false, columnDefinition = "FLOAT DEFAULT 0.0")
+    private double balance;
+	
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private Client client;
+	
+    @OneToMany(mappedBy = "client")
+    private List<BankCreditCard> bankcreditCards;
     
-    // Getters and Setters
-    public Long getId() {
-		return id;
+
+    @OneToMany(mappedBy = "client")
+    private List<BankDebitCard> bankdebitCards;
+    
+    @OneToOne(mappedBy = "client")
+    private CreditCardSecurity creditCardSecurity;
+
+    @OneToOne(mappedBy = "client")
+    private FraudSecurity fraudSecurity;
+
+    @OneToOne(mappedBy = "client")
+    private TravellingSecurity travellingSecurity;
+
+    
+ 
+	//Getters and Setters
+	
+	    public String getType() {
+		return type;
 	}
 
+	public void setType(String type) {
+		this.type = type;
+	}
+
+		public Client(String name, String type) {
+	        this.name = name;
+	        this.type = type;
+	    }
+	
+
+	public Client() {
+			// TODO Auto-generated constructor stub
+		}
+
+	public Long getId() {
+		return id;
+	}
 	public void setId(Long id) {
 		this.id = id;
 	}
-
 	public String getName() {
-		return clientName;
+		return name;
 	}
-
 	public void setName(String name) {
-		this.clientName = name;
+		this.name = name;
 	}
-
 	public Long getCPF() {
-		return CPFnumber;
+		return CPF;
 	}
-
 	public void setCPF(Long cPF) {
-		CPFnumber = cPF;
+		CPF = cPF;
 	}
-
 	public LocalDate getDateOfBirth() {
 		return dateOfBirth;
 	}
-
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
 	}
-
 	public String getAddress() {
 		return address;
 	}
-
 	public void setAddress(String address) {
 		this.address = address;
 	}
 
-	public ClientCategory getCategory() {
-		return category;
+	public double getBalance() {
+		return balance;
 	}
 
-	public void setCategory(ClientCategory category) {
-		this.category = category;
+	public void setBalance(double balance) {
+		this.balance = balance;
 	}
 
-	// Calculate total spending (replace with actual logic)
-	  private List<Double> transactions = Arrays.asList(100.0, 50.0, 200.0, 75.0);
 
-	    // Calculate total spending
-	    private double calculateTotalSpending() {
-	        double totalSpending = transactions.stream()
-	                .mapToDouble(Double::doubleValue)
-	                .sum();
-	        return totalSpending;
-	    }
-
-	    public static void main(String[] args) {
-	        Client client = new Client();
-	        double totalSpending = client.calculateTotalSpending();
-	        System.out.printf("Total spending: $%.2f%n", totalSpending);
-	    }
-	
-	 // Calculate seniority (replace with actual logic)
-	    private int calculateSeniority(LocalDate registrationDate) {
-	        LocalDate currentDate = LocalDate.now();
-	        Period period = Period.between(registrationDate, currentDate);
-	        return period.getYears();
-	    }
-
-
-	    
 }
